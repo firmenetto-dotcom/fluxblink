@@ -1,0 +1,21 @@
+# Node
+node_modules/
+.npm
+.yarn
+.pnp.*
+
+# Next.js
+.next/
+out/
+build/
+
+# Rust / Anchor
+target/
+**/*.rs.bk
+
+# Misc
+.env
+.env.local
+.DS_Store
+build_output.txt
+.obsidian/

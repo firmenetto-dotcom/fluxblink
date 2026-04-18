@@ -1,0 +1,12 @@
+{
+  "rules": [
+    {
+      "pathPattern": "/flux",
+      "apiPath": "/api/actions/flux"
+    },
+    {
+      "pathPattern": "/actions/flux",
+      "apiPath": "/api/actions/flux"
+    }
+  ]
+}

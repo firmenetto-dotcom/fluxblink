@@ -1,0 +1,25 @@
+[toolchain]
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+fluxblink_program = "47qsb1iDqWq3zyBNsnFAyNEsFtCJX7EWsrEAy1aaY9jt"
+
+[programs.devnet]
+fluxblink_program = "47qsb1iDqWq3zyBNsnFAyNEsFtCJX7EWsrEAy1aaY9jt"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[test]
+startup_wait = 10000
+
+
+[scripts]
+test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
