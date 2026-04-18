@@ -2,6 +2,14 @@
 
 Bem-vindo ao repositório do FluxBlink! Abaixo estão as tarefas divididas para focarmos e não perdermos tempo durante a competição.
 
+## ✅ Concluído (Done)
+- [x] Repositório inicializado com `.gitignore`.
+- [x] Estrutura inicial do Next.js e Anchor criadas.
+- [x] Documentação base da arquitetura e recursos preparada.
+- [x] Sincronização do repositório no GitHub (`firmenetto-dotcom`).
+
+---
+
 ## 🧑‍💻 Para Fazer (To Do)
 
 ### Frontend (UI/UX)
@@ -22,8 +30,3 @@ Bem-vindo ao repositório do FluxBlink! Abaixo estão as tarefas divididas para 
 
 ## ⏳ Em Andamento (In Progress)
 - [ ] Finalizar a ponte entre a interface gráfica e o contrato Rust.
-
-## ✅ Concluído (Done)
-- [x] Repositório inicializado com `.gitignore`.
-- [x] Estrutura inicial do Next.js e Anchor criadas.
-- [x] Documentação base da arquitetura e recursos preparada.
