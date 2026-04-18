@@ -28,6 +28,7 @@ Bem-vindo ao repositório do FluxBlink! Abaixo estão as tarefas divididas para 
 - [ ] **Solana Actions (Blinks)**: Terminar o código do `route.ts` para gerar a transação real de pagamento ao clicar no Blink no Twitter.
 
 ### Backend & Smart Contract
+- [ ] **Integração Kamino (Killer Feature)**: Fazer um CPI (Cross-Program Invocation) no contrato para depositar os fundos no Kamino Finance e gerar Yield enquanto o stream acontece.
 - [ ] **Contrato Anchor**: Codificar a lógica final do *Escrow* em `lib.rs` (distribuição proporcional do pagamento por tempo assistido).
 - [ ] **Testes na Devnet**: Fazer o deploy do contrato na Devnet e testar o envio de tokens de teste.
 - [ ] **Kill-Switch**: Implementar no contrato a regra que bloqueia o fluxo automaticamente após o TTL expirar.

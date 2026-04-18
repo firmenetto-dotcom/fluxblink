@@ -18,7 +18,7 @@ FluxBlink resolve isso focando em **Pagamentos de Consumo Imediato** através de
 
 *   **Blink-Native (Zero-Click Experience):** Não requer frontend próprio. Inicie um stream de pagamento diretamente de um tweet, Discord ou Telegram via *Solana Actions*.
 *   **AI Agent Economy Ready:** Agentes de IA preferem pagar por segundo de execução (APIs) do que assinar planos fixos. O FluxBlink é a camada de pagamento B2B do futuro.
-*   **Eficiência de Capital Absoluta:** O dinheiro não fica preso. Ele flui e rende até o milissegundo em que é efetivamente consumido.
+*   **Yield-Bearing Escrow (Kamino Finance):** O dinheiro não fica apenas parado esperando o streaming. Enquanto o saldo não consumido está no Escrow do FluxBlink, ele é automaticamente depositado no protocolo Kamino para gerar juros (Yield). Ele flui e rende até o milissegundo final.
 
 ---
 
@@ -30,6 +30,7 @@ O protocolo foi "blindado" contra os principais vetores de falha observados no e
 2. **TTL Kill-Switch (Proteção de Fundo):** Se a conexão do usuário cair e o *Heartbeat* parar, o Smart Contract bloqueia o fluxo automaticamente após o TTL (Time-To-Live), evitando "drenagem" acidental de fundos.
 3. **Optimistic Sync:** Para combater a latência natural de RPCs e WebSockets, a UI simula o consumo de forma otimista, enquanto reconcilia com a rede Solana em lotes.
 4. **Zk-Compression Ready:** Arquitetura preparada para integração com *Light Protocol / Zeak* para comprimir o estado das contas de stream, reduzindo o custo de *Rent* do Solana em até 100x.
+5. **Kamino CPI Integration (DeFi):** Interação direta do Smart Contract (Cross-Program Invocation) com os Vaults do Kamino para rentabilizar automaticamente o capital não consumido no Escrow.
 
 ---
 
