@@ -7,13 +7,8 @@ declare_id!("47qsb1iDqWq3zyBNsnFAyNEsFtCJX7EWsrEAy1aaY9jt");
 // CONSTANTS
 // ============================================================================
 
-/// Seed prefix for the stream state PDA.
-pub const STREAM_SEED: &[u8] = b"stream";
-/// Seed prefix for the escrow vault PDA.
+pub const PARKING_SEED: &[u8] = b"parking";
 pub const VAULT_SEED: &[u8] = b"vault";
-
-/// Maximum rate per second: 1_000_000 token lamports (= 1 USDC/sec).
-/// This prevents absurd rates from being set by mistake.
 pub const MAX_RATE_PER_SECOND: u64 = 1_000_000;
 
 // ============================================================================
@@ -24,36 +19,22 @@ pub const MAX_RATE_PER_SECOND: u64 = 1_000_000;
 pub mod fluxblink_program {
     use super::*;
 
-    /// Creates a new payment stream.
-    ///
-    /// The viewer deposits `deposit_amount` tokens into a program-controlled
-    /// escrow vault. The `rate_per_second` defines how many token-lamports
-    /// are consumed for each second of content viewed.
-    ///
-    /// # Arguments
-    /// * `stream_id`       – A unique u64 chosen by the frontend for this stream.
-    /// * `deposit_amount`  – Amount of tokens (in lamports) the viewer locks up.
-    /// * `rate_per_second`  – Cost per second of viewing (in token lamports).
-    pub fn initialize_stream(
-        ctx: Context<InitializeStream>,
-        stream_id: u64,
+    pub fn start_parking(
+        ctx: Context<StartParking>,
+        parking_id: u64,
         deposit_amount: u64,
         rate_per_second: u64,
         max_ttl: i64,
     ) -> Result<()> {
-        // --- Guards ---
         require!(deposit_amount > 0, FluxError::ZeroDeposit);
         require!(rate_per_second > 0, FluxError::ZeroRate);
-        require!(
-            rate_per_second <= MAX_RATE_PER_SECOND,
-            FluxError::RateTooHigh
-        );
+        require!(rate_per_second <= MAX_RATE_PER_SECOND, FluxError::RateTooHigh);
 
-        // --- Transfer tokens from viewer → escrow vault ---
+        // --- Transfer tokens from driver → escrow vault ---
         let cpi_accounts = Transfer {
-            from: ctx.accounts.viewer_token_account.to_account_info(),
+            from: ctx.accounts.driver_token_account.to_account_info(),
             to: ctx.accounts.escrow_vault.to_account_info(),
-            authority: ctx.accounts.viewer.to_account_info(),
+            authority: ctx.accounts.driver.to_account_info(),
         };
         let cpi_ctx = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
@@ -61,96 +42,76 @@ pub mod fluxblink_program {
         );
         token::transfer(cpi_ctx, deposit_amount)?;
 
-        // --- Populate the stream state ---
-        let stream = &mut ctx.accounts.stream_state;
+        // TODO: Kamino CPI Deposit here
+        // The escrow_vault now holds `deposit_amount` USDC. We would CPI to Kamino
+        // to mint kUSDC (yield-bearing asset) into a PDA-controlled kToken account.
+        msg!("FluxPark: [TODO] Depositing {} USDC into Kamino Finance...", deposit_amount);
+
+        let parking = &mut ctx.accounts.parking_state;
         let clock = Clock::get()?;
 
-        stream.viewer = ctx.accounts.viewer.key();
-        stream.creator = ctx.accounts.creator.key();
-        stream.authority = ctx.accounts.authority.key();
-        stream.mint = ctx.accounts.mint.key();
-        stream.escrow_vault = ctx.accounts.escrow_vault.key();
-        stream.rate_per_second = rate_per_second;
-        stream.total_deposited = deposit_amount;
-        stream.total_consumed = 0;
-        stream.last_consume_ts = clock.unix_timestamp;
-        stream.created_at = clock.unix_timestamp;
-        stream.is_active = true;
-        stream.max_ttl = max_ttl;
-        stream.stream_id = stream_id;
-        stream.bump = ctx.bumps.stream_state;
-        stream.vault_bump = ctx.bumps.escrow_vault;
+        parking.driver = ctx.accounts.driver.key();
+        parking.merchant = ctx.accounts.merchant.key();
+        parking.authority = ctx.accounts.authority.key();
+        parking.mint = ctx.accounts.mint.key();
+        parking.escrow_vault = ctx.accounts.escrow_vault.key();
+        parking.rate_per_second = rate_per_second;
+        parking.total_deposited = deposit_amount;
+        parking.total_consumed = 0;
+        parking.last_consume_ts = clock.unix_timestamp;
+        parking.created_at = clock.unix_timestamp;
+        parking.is_active = true;
+        parking.max_ttl = max_ttl;
+        parking.parking_id = parking_id;
+        parking.bump = ctx.bumps.parking_state;
+        parking.vault_bump = ctx.bumps.escrow_vault;
 
         msg!(
-            "FluxBlink: Stream #{} initialized. Viewer={}, Creator={}, Deposit={}, Rate={}/sec",
-            stream_id,
-            stream.viewer,
-            stream.creator,
-            deposit_amount,
-            rate_per_second,
+            "FluxPark: Parking #{} started. Driver={}, Merchant={}, Deposit={}, Rate={}/sec",
+            parking_id, parking.driver, parking.merchant, deposit_amount, rate_per_second,
         );
 
         Ok(())
     }
 
-    /// Consumes time from the stream.
-    ///
-    /// Only the designated `authority` (our backend) can call this.
-    /// It calculates the cost for `seconds_consumed` and transfers that
-    /// amount from the escrow vault to the creator's token account.
-    ///
-    /// # Arguments
-    /// * `seconds_consumed` – Number of seconds the viewer has watched since
-    ///                        the last consumption event.
-    pub fn consume_stream(
-        ctx: Context<ConsumeStream>,
+    pub fn consume_parking(
+        ctx: Context<ConsumeParking>,
         seconds_consumed: u64,
     ) -> Result<()> {
-        let stream = &mut ctx.accounts.stream_state;
+        let parking = &mut ctx.accounts.parking_state;
         let clock = Clock::get()?;
 
-        // --- Guards ---
-        require!(stream.is_active, FluxError::StreamInactive);
+        require!(parking.is_active, FluxError::ParkingInactive);
         require!(seconds_consumed > 0, FluxError::ZeroSeconds);
 
         // --- TTL Guard (Heartbeat / Kill-Switch) ---
-        // If the time since the last consume exceeds the TTL, the stream is dead.
         require!(
-            clock.unix_timestamp <= stream.last_consume_ts + stream.max_ttl,
+            clock.unix_timestamp <= parking.last_consume_ts + parking.max_ttl,
             FluxError::TtlExpired
         );
 
-        // Calculate cost
-        let cost = seconds_consumed
-            .checked_mul(stream.rate_per_second)
-            .ok_or(FluxError::MathOverflow)?;
+        let cost = seconds_consumed.checked_mul(parking.rate_per_second).ok_or(FluxError::MathOverflow)?;
+        let remaining = parking.total_deposited.checked_sub(parking.total_consumed).ok_or(FluxError::MathOverflow)?;
+        let actual_cost = if cost > remaining { remaining } else { cost };
 
-        let remaining = stream
-            .total_deposited
-            .checked_sub(stream.total_consumed)
-            .ok_or(FluxError::MathOverflow)?;
-
-        // If not enough balance, consume everything remaining and deactivate
-        let actual_cost = if cost > remaining {
-            remaining
-        } else {
-            cost
-        };
-
-        // --- Transfer tokens from escrow vault → creator ---
-        let viewer_key = stream.viewer.key();
-        let stream_id_bytes = stream.stream_id.to_le_bytes();
-        let bump = stream.vault_bump;
+        let driver_key = parking.driver.key();
+        let parking_id_bytes = parking.parking_id.to_le_bytes();
+        let bump = parking.vault_bump;
         let signer_seeds: &[&[&[u8]]] = &[&[
             VAULT_SEED,
-            viewer_key.as_ref(),
-            &stream_id_bytes,
+            driver_key.as_ref(),
+            &parking_id_bytes,
             &[bump],
         ]];
 
+        // TODO: Kamino CPI Withdraw here
+        // We would CPI to Kamino to redeem `actual_cost` worth of kUSDC back to USDC
+        // into the escrow_vault before transferring it to the merchant.
+        msg!("FluxPark: [TODO] Withdrawing {} USDC from Kamino to pay Merchant...", actual_cost);
+
         let cpi_accounts = Transfer {
             from: ctx.accounts.escrow_vault.to_account_info(),
-            to: ctx.accounts.creator_token_account.to_account_info(),
+            to: ctx.accounts.merchant_token_account.to_account_info(),
             authority: ctx.accounts.escrow_vault.to_account_info(),
         };
         let cpi_ctx = CpiContext::new_with_signer(
@@ -160,63 +121,39 @@ pub mod fluxblink_program {
         );
         token::transfer(cpi_ctx, actual_cost)?;
 
-        // --- Update state ---
-        stream.total_consumed = stream
-            .total_consumed
-            .checked_add(actual_cost)
-            .ok_or(FluxError::MathOverflow)?;
-        stream.last_consume_ts = clock.unix_timestamp;
+        parking.total_consumed = parking.total_consumed.checked_add(actual_cost).ok_or(FluxError::MathOverflow)?;
+        parking.last_consume_ts = clock.unix_timestamp;
 
-        // Auto-close if fully consumed
-        if stream.total_consumed >= stream.total_deposited {
-            stream.is_active = false;
-            msg!(
-                "FluxBlink: Stream #{} fully consumed. Total paid to creator: {}",
-                stream.stream_id,
-                stream.total_consumed,
-            );
-        } else {
-            msg!(
-                "FluxBlink: Stream #{} consumed {}s (cost={}). Remaining: {}",
-                stream.stream_id,
-                seconds_consumed,
-                actual_cost,
-                stream.total_deposited - stream.total_consumed,
-            );
+        if parking.total_consumed >= parking.total_deposited {
+            parking.is_active = false;
         }
 
         Ok(())
     }
 
-    /// Closes the stream and refunds the remaining balance to the viewer.
-    ///
-    /// Can be called by the viewer at any time to stop watching and get
-    /// their remaining deposit back. The stream state account rent is
-    /// also returned to the viewer.
-    pub fn close_stream(ctx: Context<CloseStream>) -> Result<()> {
-        let stream = &ctx.accounts.stream_state;
+    pub fn close_parking(ctx: Context<CloseParking>) -> Result<()> {
+        let parking = &ctx.accounts.parking_state;
+        let remaining = parking.total_deposited.checked_sub(parking.total_consumed).ok_or(FluxError::MathOverflow)?;
 
-        // Calculate remaining balance
-        let remaining = stream
-            .total_deposited
-            .checked_sub(stream.total_consumed)
-            .ok_or(FluxError::MathOverflow)?;
+        let driver_key = parking.driver.key();
+        let parking_id_bytes = parking.parking_id.to_le_bytes();
+        let bump = parking.vault_bump;
+        let signer_seeds: &[&[&[u8]]] = &[&[
+            VAULT_SEED,
+            driver_key.as_ref(),
+            &parking_id_bytes,
+            &[bump],
+        ]];
 
-        // --- Transfer remaining tokens from escrow → viewer ---
         if remaining > 0 {
-            let viewer_key = stream.viewer.key();
-            let stream_id_bytes = stream.stream_id.to_le_bytes();
-            let bump = stream.vault_bump;
-            let signer_seeds: &[&[&[u8]]] = &[&[
-                VAULT_SEED,
-                viewer_key.as_ref(),
-                &stream_id_bytes,
-                &[bump],
-            ]];
+            // TODO: Kamino CPI Withdraw remaining here
+            // Any remaining yield goes to the Merchant, while the base remaining
+            // deposit is refunded to the Driver.
+            msg!("FluxPark: [TODO] Withdrawing remaining {} USDC from Kamino for Driver refund...", remaining);
 
             let cpi_accounts = Transfer {
                 from: ctx.accounts.escrow_vault.to_account_info(),
-                to: ctx.accounts.viewer_token_account.to_account_info(),
+                to: ctx.accounts.driver_token_account.to_account_info(),
                 authority: ctx.accounts.escrow_vault.to_account_info(),
             };
             let cpi_ctx = CpiContext::new_with_signer(
@@ -227,31 +164,9 @@ pub mod fluxblink_program {
             token::transfer(cpi_ctx, remaining)?;
         }
 
-        msg!(
-            "FluxBlink: Stream #{} closed. Refunded {} to viewer. Total paid: {}",
-            stream.stream_id,
-            remaining,
-            stream.total_consumed,
-        );
-
-        // The stream_state account is closed via the `close = viewer` constraint,
-        // returning the rent-exempt SOL to the viewer.
-        // The escrow_vault token account is closed via close_account below.
-
-        // --- Close the escrow vault token account ---
-        let viewer_key = stream.viewer.key();
-        let stream_id_bytes = stream.stream_id.to_le_bytes();
-        let bump = stream.vault_bump;
-        let signer_seeds: &[&[&[u8]]] = &[&[
-            VAULT_SEED,
-            viewer_key.as_ref(),
-            &stream_id_bytes,
-            &[bump],
-        ]];
-
         let cpi_accounts = anchor_spl::token::CloseAccount {
             account: ctx.accounts.escrow_vault.to_account_info(),
-            destination: ctx.accounts.viewer.to_account_info(),
+            destination: ctx.accounts.driver.to_account_info(),
             authority: ctx.accounts.escrow_vault.to_account_info(),
         };
         let cpi_ctx = CpiContext::new_with_signer(
@@ -270,119 +185,120 @@ pub mod fluxblink_program {
 // ============================================================================
 
 #[derive(Accounts)]
-#[instruction(stream_id: u64, deposit_amount: u64, rate_per_second: u64, max_ttl: i64)]
-pub struct InitializeStream<'info> {
-    /// The viewer (payer) who deposits tokens and watches content.
+#[instruction(parking_id: u64)]
+pub struct StartParking<'info> {
     #[account(mut)]
-    pub viewer: Signer<'info>,
+    pub driver: Signer<'info>,
 
-    /// The content creator who will receive payments.
-    /// CHECK: We only store this pubkey; no data is read or written.
-    pub creator: UncheckedAccount<'info>,
+    /// CHECK: Merchant (parking owner) wallet
+    pub merchant: UncheckedAccount<'info>,
 
-    /// The backend authority allowed to call `consume_stream`.
-    /// CHECK: We only store this pubkey; no data is read or written.
+    /// CHECK: Backend authority
     pub authority: UncheckedAccount<'info>,
-
-    /// The SPL token mint (e.g. USDC).
+    
     pub mint: Box<Account<'info, Mint>>,
 
-    /// The viewer's token account that tokens will be transferred from.
     #[account(
         mut,
-        constraint = viewer_token_account.owner == viewer.key() @ FluxError::TokenOwnerMismatch,
-        constraint = viewer_token_account.mint == mint.key() @ FluxError::MintMismatch,
+        constraint = driver_token_account.owner == driver.key() @ FluxError::TokenOwnerMismatch,
+        constraint = driver_token_account.mint == mint.key() @ FluxError::MintMismatch,
     )]
-    pub viewer_token_account: Box<Account<'info, TokenAccount>>,
+    pub driver_token_account: Box<Account<'info, TokenAccount>>,
 
-
-    /// The program-controlled escrow vault (a PDA-owned token account).
     #[account(
         init,
-        payer = viewer,
-        seeds = [VAULT_SEED, viewer.key().as_ref(), &stream_id.to_le_bytes()],
+        payer = driver,
+        seeds = [VAULT_SEED, driver.key().as_ref(), &parking_id.to_le_bytes()],
         bump,
         token::mint = mint,
         token::authority = escrow_vault,
     )]
     pub escrow_vault: Box<Account<'info, TokenAccount>>,
 
-    /// The stream state PDA that tracks consumption.
     #[account(
         init,
-        payer = viewer,
-        space = 8 + StreamState::INIT_SPACE,
-        seeds = [STREAM_SEED, viewer.key().as_ref(), &stream_id.to_le_bytes()],
+        payer = driver,
+        space = 8 + ParkingState::INIT_SPACE,
+        seeds = [PARKING_SEED, driver.key().as_ref(), &parking_id.to_le_bytes()],
         bump,
     )]
-    pub stream_state: Box<Account<'info, StreamState>>,
+    pub parking_state: Box<Account<'info, ParkingState>>,
 
+    // --- KAMINO CPI ACCOUNTS (Placeholders for upcoming integration) ---
+    // /// CHECK: Kamino Strategy Program
+    // pub kamino_program: UncheckedAccount<'info>,
+    // /// CHECK: Kamino Global Config
+    // pub kamino_global_config: UncheckedAccount<'info>,
+    // /// CHECK: Kamino Strategy
+    // #[account(mut)]
+    // pub kamino_strategy: UncheckedAccount<'info>,
+    // /// CHECK: Kamino kToken Mint (Yield Bearing Asset)
+    // #[account(mut)]
+    // pub ktoken_mint: UncheckedAccount<'info>,
+    // #[account(
+    //     init_if_needed,
+    //     payer = driver,
+    //     associated_token::mint = ktoken_mint,
+    //     associated_token::authority = escrow_vault
+    // )]
+    // pub escrow_ktoken_account: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
+    // pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 #[derive(Accounts)]
-pub struct ConsumeStream<'info> {
-    /// The backend authority that reports viewing time.
+pub struct ConsumeParking<'info> {
     pub authority: Signer<'info>,
 
-    /// The stream state — must match the authority.
     #[account(
         mut,
-        constraint = stream_state.authority == authority.key() @ FluxError::Unauthorized,
-        constraint = stream_state.is_active @ FluxError::StreamInactive,
+        constraint = parking_state.authority == authority.key() @ FluxError::Unauthorized,
+        constraint = parking_state.is_active @ FluxError::ParkingInactive,
     )]
-    pub stream_state: Box<Account<'info, StreamState>>,
+    pub parking_state: Box<Account<'info, ParkingState>>,
 
-    /// The escrow vault holding the viewer's deposit.
     #[account(
         mut,
-        constraint = escrow_vault.key() == stream_state.escrow_vault @ FluxError::VaultMismatch,
+        constraint = escrow_vault.key() == parking_state.escrow_vault @ FluxError::VaultMismatch,
     )]
     pub escrow_vault: Box<Account<'info, TokenAccount>>,
 
-
-    /// The creator's token account to receive payment.
     #[account(
         mut,
-        constraint = creator_token_account.owner == stream_state.creator @ FluxError::TokenOwnerMismatch,
-        constraint = creator_token_account.mint == stream_state.mint @ FluxError::MintMismatch,
+        constraint = merchant_token_account.owner == parking_state.merchant @ FluxError::TokenOwnerMismatch,
+        constraint = merchant_token_account.mint == parking_state.mint @ FluxError::MintMismatch,
     )]
-    pub creator_token_account: Account<'info, TokenAccount>,
+    pub merchant_token_account: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
-pub struct CloseStream<'info> {
-    /// Only the viewer can close (and receive the refund).
+pub struct CloseParking<'info> {
     #[account(mut)]
-    pub viewer: Signer<'info>,
+    pub driver: Signer<'info>,
 
-    /// The stream state — closed and rent returned to viewer.
     #[account(
         mut,
-        constraint = stream_state.viewer == viewer.key() @ FluxError::Unauthorized,
-        close = viewer,
+        constraint = parking_state.driver == driver.key() @ FluxError::Unauthorized,
+        close = driver,
     )]
-    pub stream_state: Box<Account<'info, StreamState>>,
+    pub parking_state: Box<Account<'info, ParkingState>>,
 
-    /// The escrow vault to drain remaining tokens from.
     #[account(
         mut,
-        constraint = escrow_vault.key() == stream_state.escrow_vault @ FluxError::VaultMismatch,
+        constraint = escrow_vault.key() == parking_state.escrow_vault @ FluxError::VaultMismatch,
     )]
     pub escrow_vault: Box<Account<'info, TokenAccount>>,
 
-
-    /// The viewer's token account to receive the refund.
     #[account(
         mut,
-        constraint = viewer_token_account.owner == viewer.key() @ FluxError::TokenOwnerMismatch,
-        constraint = viewer_token_account.mint == stream_state.mint @ FluxError::MintMismatch,
+        constraint = driver_token_account.owner == driver.key() @ FluxError::TokenOwnerMismatch,
+        constraint = driver_token_account.mint == parking_state.mint @ FluxError::MintMismatch,
     )]
-    pub viewer_token_account: Account<'info, TokenAccount>,
+    pub driver_token_account: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
 }
@@ -393,36 +309,21 @@ pub struct CloseStream<'info> {
 
 #[account]
 #[derive(InitSpace)]
-pub struct StreamState {
-    /// The wallet of the person watching/paying.
-    pub viewer: Pubkey,
-    /// The wallet of the content creator receiving payment.
-    pub creator: Pubkey,
-    /// The backend authority that can call `consume_stream`.
+pub struct ParkingState {
+    pub driver: Pubkey,
+    pub merchant: Pubkey,
     pub authority: Pubkey,
-    /// The SPL token mint used for payment (e.g. USDC).
     pub mint: Pubkey,
-    /// The PDA-controlled token account holding escrowed funds.
     pub escrow_vault: Pubkey,
-    /// Cost in token-lamports for each second of content viewed.
     pub rate_per_second: u64,
-    /// Total tokens deposited into the escrow by the viewer.
     pub total_deposited: u64,
-    /// Total tokens consumed (transferred to creator) so far.
     pub total_consumed: u64,
-    /// Unix timestamp of the last consumption event.
     pub last_consume_ts: i64,
-    /// Unix timestamp when the stream was created.
     pub created_at: i64,
-    /// Whether the stream is currently active.
     pub is_active: bool,
-    /// Maximum time (seconds) allowed between heartbeats before auto-pause.
     pub max_ttl: i64,
-    /// A unique identifier for this stream (set by frontend).
-    pub stream_id: u64,
-    /// PDA bump for the stream_state account.
+    pub parking_id: u64,
     pub bump: u8,
-    /// PDA bump for the escrow_vault account.
     pub vault_bump: u8,
 }
 
@@ -438,8 +339,8 @@ pub enum FluxError {
     ZeroRate,
     #[msg("Rate per second exceeds the maximum allowed.")]
     RateTooHigh,
-    #[msg("The stream is no longer active.")]
-    StreamInactive,
+    #[msg("The parking session is no longer active.")]
+    ParkingInactive,
     #[msg("Seconds consumed must be greater than zero.")]
     ZeroSeconds,
     #[msg("Arithmetic overflow.")]
@@ -450,8 +351,8 @@ pub enum FluxError {
     TokenOwnerMismatch,
     #[msg("Token mint does not match expected mint.")]
     MintMismatch,
-    #[msg("Escrow vault does not match the stream state.")]
+    #[msg("Escrow vault does not match the parking state.")]
     VaultMismatch,
-    #[msg("Stream TTL expired. Heartbeat timeout reached.")]
+    #[msg("Parking TTL expired. Heartbeat timeout reached.")]
     TtlExpired,
 }
