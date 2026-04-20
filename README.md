@@ -1,36 +1,35 @@
 # FluxBlink ⚡
 
-> **A Economia da Atenção, Precificada por Segundo.**
+> **A Primeira Rede de Pagamentos Autônoma do Mundo Real.**
 
-O **FluxBlink** é um protocolo não-custodial no Solana que permite a transferência de valor em tempo real, proporcionalmente ao tempo de consumo de um serviço ou conteúdo. Sem assinaturas mensais tóxicas, sem intermediários prendendo capital.
+O **FluxBlink** é um protocolo DePIN no Solana que transforma a infraestrutura física (estacionamentos, recarga EV) em serviços autônomos e fluidos. Sem cancelas, sem maquininhas de cartão, e sem fricção.
 
 *Desenvolvido para o Solana Frontier Hackathon.*
 
 ---
 
-## 🛑 O Problema (A Fricção Atual)
-1. **Ineficiência de Capital:** Modelos de *escrow* tradicionais travam o capital do usuário por períodos longos. 
-2. **Assinaturas Tóxicas:** Usuários pagam $15/mês por serviços onde assistem apenas algumas horas de conteúdo.
-3. **Barreiras de Entrada:** Forçar usuários a cadastros extensos apenas para acessar micro-conteúdos reduz a conversão em 68%.
+## 🛑 O Problema das Bandeiras (A Fricção Atual)
+O mercado de estacionamentos e serviços rotativos físicos é refém do sistema financeiro tradicional (Mastercard, Visa, Elo):
+1. **Taxas Abusivas (MDR):** Maquininhas cobram um valor fixo + porcentagem (ex: R$ 0,30 + 3%), o que inviabiliza o lucro em micro-paradas (como uma vaga de 15 minutos).
+2. **Custo de Infraestrutura:** Cancelas mecânicas e tótens de pagamento são caros, quebram com frequência e causam filas.
+3. **Dinheiro "Burro":** Enquanto a transação não é liquidada, o dinheiro do lojista não rende nada (D+1 ou D+30).
 
-## 💡 A Solução (The Wedge)
-FluxBlink resolve isso focando em **Pagamentos de Consumo Imediato** através de três pilares:
+## 💡 A Solução: O "Estacionamento Invisível"
+O FluxBlink elimina o hardware tradicional usando software baseado em Solana:
 
-*   **Blink-Native (Zero-Click Experience):** Não requer frontend próprio. Inicie um stream de pagamento diretamente de um tweet, Discord ou Telegram via *Solana Actions*.
-*   **AI Agent Economy Ready:** Agentes de IA preferem pagar por segundo de execução (APIs) do que assinar planos fixos. O FluxBlink é a camada de pagamento B2B do futuro.
-*   **Yield-Bearing Escrow (Kamino Finance):** O dinheiro não fica apenas parado esperando o streaming. Enquanto o saldo não consumido está no Escrow do FluxBlink, ele é automaticamente depositado no protocolo Kamino para gerar juros (Yield). Ele flui e rende até o milissegundo final.
+1. **Computer Vision + Solana Actions (Blinks):** Câmeras (IoT) identificam a placa do veículo na vaga. O protocolo dispara um **Blink** para o usuário (via push notification, Telegram ou web). O usuário clica e inicia um "stream de pagamento". Zero cliques extras.
+2. **Pagamento por Segundo Real:** Usando canais de estado otimistas, o motorista paga *exatamente* pelo tempo que ficou. 12 minutos e 4 segundos? O Solana cobra perfeitamente, com frações de centavo de taxa de rede.
+3. **Yield-Bearing Escrow (Kamino Finance):** O dinheiro pré-pago no estacionamento não fica parado. O Smart Contract deposita tudo no protocolo **Kamino**, gerando juros. **O dono do estacionamento lucra com o tempo de parada + o rendimento do capital.**
 
 ---
 
 ## 🏗️ Arquitetura & Defesas Técnicas
 
-O protocolo foi "blindado" contra os principais vetores de falha observados no ecossistema:
+O protocolo é blindado para operações do mundo real:
 
-1. **Smart Contracts (Rust + Anchor):** Lógica de *Escrow* baseada em PDAs. Somente o criador pode sacar o valor proporcional ao tempo já consumido.
-2. **TTL Kill-Switch (Proteção de Fundo):** Se a conexão do usuário cair e o *Heartbeat* parar, o Smart Contract bloqueia o fluxo automaticamente após o TTL (Time-To-Live), evitando "drenagem" acidental de fundos.
-3. **Optimistic Sync:** Para combater a latência natural de RPCs e WebSockets, a UI simula o consumo de forma otimista, enquanto reconcilia com a rede Solana em lotes.
-4. **Zk-Compression Ready:** Arquitetura preparada para integração com *Light Protocol / Zeak* para comprimir o estado das contas de stream, reduzindo o custo de *Rent* do Solana em até 100x.
-5. **Kamino CPI Integration (DeFi):** Interação direta do Smart Contract (Cross-Program Invocation) com os Vaults do Kamino para rentabilizar automaticamente o capital não consumido no Escrow.
+1. **Smart Contracts (Rust + Anchor):** Lógica de *Escrow* controlada via PDAs, garantindo confiança entre o motorista e o dono do pátio.
+2. **TTL Kill-Switch (Proteção IoT):** Se o carro sair da vaga e o sensor (IoT) falhar em avisar a rede, o contrato possui um "Heartbeat" com *Time-To-Live*. Ao expirar, o fluxo de pagamento é cortado automaticamente, protegendo o saldo do usuário.
+3. **Zk-Compression Ready:** Estrutura otimizada para escalar milhares de vagas na cidade sem inchar o estado da rede, reduzindo custos de *Rent* radicalmente.
 
 ---
 
@@ -49,11 +48,11 @@ cd web
 npm install
 npm run dev
 ```
-Acesse `http://localhost:3000` para ver a Landing Page ou interaja com o Blink de testes através de uma extensão compatível (ex: Phantom Dial).
+Acesse `http://localhost:3000` para ver o Dashboard de Estacionamento ou interagir com o Blink.
 
 ---
 
 ## 🔮 Roadmap
-* **Phase 1 (Hackathon MVP):** Smart Contract Base, Video Player UI, Blinks Integration.
-* **Phase 2 (AI & B2B Expansion):** Integração com **Squads Multisig** para tesourarias empresariais e Session Keys.
-* **Phase 3 (FluxBlink Network):** Storage permanente via Arweave e DRM descentralizado.
+* **Phase 1 (Hackathon MVP):** Protótipo do Smart Contract de Stream, Integração com Kamino (Yield), e Solana Actions para a vaga física.
+* **Phase 2 (Visão Computacional):** Integração com APIs de reconhecimento de placas (ALPR) para o gatilho automático do Blink.
+* **Phase 3 (Airbnb das Vagas):** Abertura do protocolo para vagas residenciais peer-to-peer.

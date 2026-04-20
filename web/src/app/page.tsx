@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import VideoPlayer from '@/components/VideoPlayer';
-import { Zap, Shield, Globe, Cpu, ChevronRight, DollarSign, Users, Activity, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Zap, Shield, Car, QrCode, Camera, ChevronRight, DollarSign, Users, Activity, ArrowUpRight, Sparkles, TrendingUp } from 'lucide-react';
 
 /* ── Animated counter hook ── */
 function useCountUp(target: number, duration = 2000, suffix = '') {
@@ -43,12 +42,10 @@ function useCountUp(target: number, duration = 2000, suffix = '') {
 function OrbField() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Primary glow */}
-      <div className="absolute -top-[30%] -left-[15%] w-[700px] h-[700px] rounded-full bg-purple-600/[0.07] blur-[150px] animate-float" />
-      <div className="absolute -bottom-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-blue-600/[0.08] blur-[130px] animate-float" style={{ animationDelay: '-2s' }} />
-      <div className="absolute top-[40%] left-[50%] w-[400px] h-[400px] rounded-full bg-cyan-500/[0.05] blur-[120px] animate-float" style={{ animationDelay: '-4s' }} />
+      <div className="absolute -top-[30%] -left-[15%] w-[700px] h-[700px] rounded-full bg-blue-600/[0.07] blur-[150px] animate-float" />
+      <div className="absolute -bottom-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-cyan-600/[0.08] blur-[130px] animate-float" style={{ animationDelay: '-2s' }} />
+      <div className="absolute top-[40%] left-[50%] w-[400px] h-[400px] rounded-full bg-emerald-500/[0.05] blur-[120px] animate-float" style={{ animationDelay: '-4s' }} />
       
-      {/* Grid pattern */}
       <div className="absolute inset-0 opacity-[0.015]"
         style={{
           backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
@@ -94,6 +91,81 @@ function FeatureCard({ icon, title, desc, delay }: { icon: React.ReactNode; titl
   );
 }
 
+/* ── Parking Dashboard Mock ── */
+function ParkingDashboard() {
+  const [spots, setSpots] = useState([
+    { id: 'A-01', status: 'free', balance: 0, occupant: null, rate: 0.05 },
+    { id: 'A-02', status: 'occupied', balance: 1.45, occupant: 'DEF-5678', rate: 0.05 },
+    { id: 'B-01', status: 'occupied', balance: 4.20, occupant: 'XYZ-1234', rate: 0.08 },
+    { id: 'B-02', status: 'free', balance: 0, occupant: null, rate: 0.05 },
+  ]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSpots(s => s.map(spot => 
+        spot.status === 'occupied' 
+          ? { ...spot, balance: spot.balance + (spot.rate / 60) } 
+          : spot
+      ));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="glass-card p-8 rounded-[2rem] w-full max-w-4xl mx-auto border border-white/10 shadow-2xl shadow-blue-500/10 animate-fade-in-scale" style={{ animationDelay: '0.4s' }}>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <h3 className="text-2xl font-bold font-[family-name:var(--font-display)] flex items-center gap-2">
+            <Car className="w-6 h-6 text-blue-400" />
+            Painel da Unidade - Faria Lima
+          </h3>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">Monitoramento autônomo de fluxo on-chain</p>
+        </div>
+        <div className="flex gap-4">
+          <div className="text-right px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <p className="text-emerald-400/80 text-[10px] uppercase tracking-wider font-bold mb-1">Rendimento (Kamino)</p>
+            <p className="text-emerald-400 font-mono font-bold flex items-center gap-1">
+              <TrendingUp className="w-4 h-4" />
+              +12.4% APY
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {spots.map((spot) => (
+          <div key={spot.id} className={`p-5 rounded-2xl border transition-all duration-300 ${
+            spot.status === 'occupied' 
+              ? 'bg-gradient-to-b from-blue-500/10 to-transparent border-blue-500/30 shadow-inner shadow-blue-500/10' 
+              : 'bg-white/5 border-white/5 opacity-50'
+          }`}>
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-sm font-bold bg-white/10 px-2 py-1 rounded text-[var(--text-muted)]">{spot.id}</span>
+              {spot.status === 'occupied' && <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />}
+            </div>
+            
+            {spot.status === 'occupied' ? (
+              <div className="space-y-3">
+                <div className="text-xs text-[var(--text-secondary)] font-mono">{spot.occupant}</div>
+                <div>
+                  <div className="text-[10px] uppercase text-[var(--text-muted)] font-bold mb-1">Fluindo ao vivo</div>
+                  <div className="text-2xl font-mono font-bold text-white tracking-tight">
+                    ${spot.balance.toFixed(4)}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="py-6 text-center text-[var(--text-muted)] text-sm font-medium">
+                Vaga Livre
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [mounted, setMounted] = useState(false);
 
@@ -110,32 +182,28 @@ export default function Home() {
       {/* ── Navigation ── */}
       <nav className="relative z-20 flex justify-between items-center px-6 md:px-12 py-5 max-w-[1400px] mx-auto animate-fade-in">
         <div className="flex items-center gap-3 group cursor-pointer">
-          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 group-hover:rotate-12 transition-all duration-500">
+          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:rotate-12 transition-all duration-500">
             <Zap className="w-5 h-5 fill-current" />
-            <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 blur-lg opacity-30 group-hover:opacity-60 transition-opacity" />
+            <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 blur-lg opacity-30 group-hover:opacity-60 transition-opacity" />
           </div>
           <span className="text-xl font-extrabold tracking-tight font-[family-name:var(--font-display)]">
-            FLUX<span className="text-blue-400">BLINK</span>
+            FLUX<span className="text-cyan-400">PARK</span>
           </span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
           <div className="flex items-center gap-6 text-sm font-medium text-[var(--text-secondary)]">
             <a href="#" className="hover:text-white transition-colors duration-300 relative group/link">
-              Protocol
-              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-gradient-to-r from-purple-500 to-blue-500 group-hover/link:w-full transition-all duration-300" />
+              Rede DePIN
+              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-gradient-to-r from-blue-500 to-cyan-500 group-hover/link:w-full transition-all duration-300" />
             </a>
             <a href="#" className="hover:text-white transition-colors duration-300 relative group/link">
-              Developers
-              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-gradient-to-r from-purple-500 to-blue-500 group-hover/link:w-full transition-all duration-300" />
-            </a>
-            <a href="#" className="hover:text-white transition-colors duration-300 relative group/link">
-              Governance
-              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-gradient-to-r from-purple-500 to-blue-500 group-hover/link:w-full transition-all duration-300" />
+              Gestores
+              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-gradient-to-r from-blue-500 to-cyan-500 group-hover/link:w-full transition-all duration-300" />
             </a>
           </div>
           <button className="btn-primary px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2">
-            <span>Launch App</span>
+            <span>Dashboard</span>
             <ArrowUpRight className="w-4 h-4" />
           </button>
         </div>
@@ -145,70 +213,61 @@ export default function Home() {
       <section className="relative z-10 pt-16 md:pt-24 pb-20 px-4 max-w-[1400px] mx-auto">
         <div className="text-center mb-20 space-y-6">
           {/* Badge */}
-          <div className="animate-fade-in inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass text-xs font-bold tracking-[0.15em] uppercase text-blue-400">
+          <div className="animate-fade-in inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass text-xs font-bold tracking-[0.15em] uppercase text-cyan-400">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
             </span>
-            Solana Frontier Hackathon
+            Solana DePIN Infrastructure
           </div>
 
           {/* Title */}
           <h1 className="hero-title text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-black tracking-tight leading-[0.95] max-w-5xl mx-auto font-[family-name:var(--font-display)] animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            STREAMING{' '}
+            INFRAESTRUTURA{' '}
             <br className="hidden sm:block" />
             <span className="gradient-text animate-gradient inline-block">
-              PAY-PER-SECOND
+              AUTÔNOMA
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-[var(--text-secondary)] text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            O futuro da monetização de conteúdo chegou. Sem assinaturas, sem intermediários.
-            Pague apenas pelo que você assiste, direto no seu browser via Blinks.
+            O fim das maquininhas de cartão e cancelas. O pagamento de estacionamentos que flui em tempo real via Solana Blinks e rende juros no Kamino.
           </p>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <button className="btn-primary w-full sm:w-auto px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 text-base">
               <Sparkles className="w-5 h-5" />
-              <span>Começar a Assistir</span>
+              <span>Simular Estacionamento</span>
               <ChevronRight className="w-5 h-5" />
-            </button>
-            <button className="w-full sm:w-auto px-8 py-4 glass rounded-2xl font-bold transition-all duration-300 hover:bg-white/10 hover:-translate-y-1 text-base">
-              Sou Criador
             </button>
           </div>
         </div>
 
-        {/* ── Video Player ── */}
-        <div className="relative group mb-32 animate-fade-in-scale" style={{ animationDelay: '0.4s' }}>
-          {/* Outer glow */}
-          <div className="absolute -inset-2 bg-gradient-to-r from-purple-600/30 via-blue-600/30 to-cyan-500/30 rounded-[2rem] blur-xl opacity-30 group-hover:opacity-60 transition-all duration-700" />
-          <VideoPlayer
-            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            ratePerSecond={100}
-          />
+        {/* ── Mock Dashboard ── */}
+        <div className="mb-32">
+          <ParkingDashboard />
         </div>
 
         {/* ── Stats Grid ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-32">
           <StatCard
             icon={<DollarSign className="w-6 h-6 text-emerald-400" />}
-            label="Total Pago a Criadores"
-            value="142,500 USDC"
+            label="Economia em Taxas (MDR)"
+            value="$42,500"
             delay="0.1s"
           />
           <StatCard
-            icon={<Users className="w-6 h-6 text-blue-400" />}
-            label="Visualizações Ativas"
+            icon={<Car className="w-6 h-6 text-blue-400" />}
+            label="Vagas Conectadas"
             value="1,204"
             delay="0.2s"
           />
           <StatCard
-            icon={<Activity className="w-6 h-6 text-purple-400" />}
-            label="Transações por Segundo"
-            value="65,000+"
+            icon={<TrendingUp className="w-6 h-6 text-cyan-400" />}
+            label="Yield Gerado (Kamino)"
+            value="$8,450"
             delay="0.3s"
           />
         </div>
@@ -216,80 +275,50 @@ export default function Home() {
         {/* ── Feature Grid ── */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <FeatureCard
-            icon={<Shield className="w-7 h-7 text-purple-400" />}
-            title="TTL Kill-Switch"
-            desc="Proteção contra quedas de internet. O stream é bloqueado on-chain automaticamente se o heartbeat falhar."
+            icon={<Camera className="w-7 h-7 text-purple-400" />}
+            title="Computer Vision"
+            desc="Câmeras IoT leem as placas e disparam o Blink de pagamento automaticamente para o celular do usuário."
             delay="0.1s"
           />
           <FeatureCard
-            icon={<Cpu className="w-7 h-7 text-blue-400" />}
-            title="Optimistic Sync"
-            desc="Interface fluida com reconciliação on-chain em lote, anulando problemas de latência de RPC e WebSockets."
+            icon={<QrCode className="w-7 h-7 text-blue-400" />}
+            title="Blink-Native"
+            desc="Sem fricção. Sem app para baixar. Escaneie um QR Code ou clique na notificação para iniciar o stream."
             delay="0.2s"
           />
           <FeatureCard
-            icon={<Globe className="w-7 h-7 text-emerald-400" />}
-            title="Blink-Native"
-            desc="Inicie um stream instantaneamente de um tweet ou chat via Solana Actions, sem fricção de cadastro."
+            icon={<Shield className="w-7 h-7 text-emerald-400" />}
+            title="Kill-Switch IoT"
+            desc="Se o carro sair e o sensor perder conexão, o contrato on-chain bloqueia o pagamento protegendo o cliente."
             delay="0.3s"
           />
           <FeatureCard
-            icon={<Zap className="w-7 h-7 text-amber-400" />}
-            title="Zk-Compression Ready"
-            desc="Arquitetura preparada para comprimir contas de estado, reduzindo custos de rent em até 100x."
+            icon={<TrendingUp className="w-7 h-7 text-amber-400" />}
+            title="Yield-Bearing"
+            desc="O dinheiro fica no Escrow rendendo juros no protocolo Kamino enquanto o carro está estacionado."
             delay="0.4s"
           />
-        </div>
-      </section>
-
-      {/* ── How It Works ── */}
-      <section className="relative z-10 py-32 px-4 max-w-[1400px] mx-auto">
-        <div className="text-center mb-16">
-          <p className="text-xs font-bold tracking-[0.2em] uppercase text-blue-400 mb-4">Como funciona</p>
-          <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-display)] tracking-tight">
-            Simples como <span className="gradient-text">1-2-3</span>
-          </h2>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8 relative">
-          {/* Connection line */}
-          <div className="hidden md:block absolute top-[3.5rem] left-[20%] right-[20%] h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-          {[
-            { step: "01", title: "Conecte sua Wallet", desc: "Use Phantom ou Solflare para conectar em 1 clique. Sem cadastro.", color: "from-purple-500 to-purple-600" },
-            { step: "02", title: "Deposite no Escrow", desc: "Escolha quanto USDC deseja depositar. Seus fundos ficam seguros no Smart Contract.", color: "from-blue-500 to-blue-600" },
-            { step: "03", title: "Assista e Pague", desc: "O pagamento acontece em tempo real por segundo. Pare quando quiser e receba o troco.", color: "from-cyan-500 to-emerald-500" },
-          ].map((item, i) => (
-            <div key={i} className="text-center group animate-fade-in-up" style={{ animationDelay: `${0.1 + i * 0.15}s` }}>
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 relative`}>
-                <span className="text-xl font-bold font-[family-name:var(--font-mono)]">{item.step}</span>
-                <div className={`absolute -inset-2 rounded-2xl bg-gradient-to-br ${item.color} blur-xl opacity-20 group-hover:opacity-40 transition-opacity`} />
-              </div>
-              <h3 className="text-lg font-bold mb-2 font-[family-name:var(--font-display)]">{item.title}</h3>
-              <p className="text-[var(--text-secondary)] text-sm max-w-xs mx-auto">{item.desc}</p>
-            </div>
-          ))}
         </div>
       </section>
 
       {/* ── CTA Section ── */}
       <section className="relative z-10 py-24 px-4">
         <div className="max-w-4xl mx-auto text-center glass-card p-12 md:p-16 rounded-3xl relative overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-60 h-60 bg-purple-600/10 blur-[80px] rounded-full" />
-          <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-blue-600/10 blur-[80px] rounded-full" />
+          <div className="absolute -top-20 -right-20 w-60 h-60 bg-blue-600/10 blur-[80px] rounded-full" />
+          <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-cyan-600/10 blur-[80px] rounded-full" />
           
           <div className="relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-display)] tracking-tight mb-4">
-              Pronto para revolucionar o{' '}
-              <span className="gradient-text">streaming?</span>
+              Junte-se à revolução do{' '}
+              <span className="gradient-text">DePIN</span>
             </h2>
             <p className="text-[var(--text-secondary)] text-lg mb-8 max-w-lg mx-auto">
-              Junte-se aos criadores que já estão recebendo pagamento em tempo real por cada segundo de conteúdo.
+              Transforme seu estacionamento em uma infraestrutura autônoma, corte taxas da Mastercard e ganhe juros pelo Kamino.
             </p>
             <button className="btn-primary px-10 py-4 rounded-2xl font-bold text-base">
               <span className="flex items-center gap-2">
-                <Zap className="w-5 h-5" />
-                Acessar Protocolo
+                <Car className="w-5 h-5" />
+                Cadastrar Estacionamento
               </span>
             </button>
           </div>
@@ -300,10 +329,10 @@ export default function Home() {
       <footer className="relative z-10 py-12 border-t border-white/5">
         <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
               <Zap className="w-3 h-3 fill-current" />
             </div>
-            <span className="text-sm font-bold text-[var(--text-muted)]">FluxBlink Protocol</span>
+            <span className="text-sm font-bold text-[var(--text-muted)]">FluxPark (FluxBlink) Protocol</span>
           </div>
           <p className="text-[var(--text-muted)] text-xs">
             © 2026 FluxBlink • Built for Solana Frontier Hackathon
@@ -311,7 +340,6 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <a href="/pitch" className="text-xs text-[var(--text-secondary)] hover:text-white transition-colors">Pitch Deck</a>
             <a href="#" className="text-xs text-[var(--text-secondary)] hover:text-white transition-colors">GitHub</a>
-            <a href="#" className="text-xs text-[var(--text-secondary)] hover:text-white transition-colors">Twitter</a>
           </div>
         </div>
       </footer>
