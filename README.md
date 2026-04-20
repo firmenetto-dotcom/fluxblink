@@ -19,7 +19,7 @@ O FluxBlink elimina o hardware tradicional usando software baseado em Solana:
 
 1. **Computer Vision + Solana Actions (Blinks):** Câmeras (IoT) identificam a placa do veículo na vaga. O protocolo dispara um **Blink** para o usuário (via push notification, Telegram ou web). O usuário clica e inicia um "stream de pagamento". Zero cliques extras.
 2. **Pagamento por Segundo Real:** Usando canais de estado otimistas, o motorista paga *exatamente* pelo tempo que ficou. 12 minutos e 4 segundos? O Solana cobra perfeitamente, com frações de centavo de taxa de rede.
-3. **Yield-Bearing Escrow (Kamino Finance):** O dinheiro pré-pago no estacionamento não fica parado. O Smart Contract deposita tudo no protocolo **Kamino**, gerando juros. **O dono do estacionamento lucra com o tempo de parada + o rendimento do capital.**
+3. **Yield-Bearing Escrow (Ondo Finance RWA):** O dinheiro pré-pago no estacionamento não fica parado. O Smart Contract converte os dólares para **USDY (Títulos do Tesouro Americano via Ondo)**, gerando juros seguros. **O dono do estacionamento lucra com o tempo de parada + o rendimento do capital.**
 
 ---
 
@@ -53,6 +53,6 @@ Acesse `http://localhost:3000` para ver o Dashboard de Estacionamento ou interag
 ---
 
 ## 🔮 Roadmap
-* **Phase 1 (Hackathon MVP):** Protótipo do Smart Contract de Stream, Integração com Kamino (Yield), e Solana Actions para a vaga física.
+* **Phase 1 (Hackathon MVP):** Protótipo do Smart Contract de Stream, Integração com Ondo Finance (US Treasuries), e Solana Actions para a vaga física.
 * **Phase 2 (Visão Computacional):** Integração com APIs de reconhecimento de placas (ALPR) para o gatilho automático do Blink.
 * **Phase 3 (Airbnb das Vagas):** Abertura do protocolo para vagas residenciais peer-to-peer.

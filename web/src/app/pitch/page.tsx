@@ -133,7 +133,7 @@ export default function PitchDeck() {
               {[
                 { icon: <Camera className="text-blue-400 w-5 h-5" />, text: "Computer Vision (ALPR) elimina cancelas" },
                 { icon: <QrCode className="text-cyan-400 w-5 h-5" />, text: "Blinks via push para pagamento Zero-Click" },
-                { icon: <TrendingUp className="text-emerald-400 w-5 h-5" />, text: "Escrow Yield-Bearing no Kamino Finance" },
+                { icon: <TrendingUp className="text-emerald-400 w-5 h-5" />, text: "Escrow Yield-Bearing com U.S. Treasuries (Ondo)" },
                 { icon: <Zap className="text-amber-400 w-5 h-5" />, text: "Frações de centavo por transação na Solana" },
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-3 text-lg text-[var(--text-secondary)] animate-fade-in-up" style={{ animationDelay: `${0.3 + i * 0.1}s` }}>
@@ -155,9 +155,9 @@ export default function PitchDeck() {
               {/* Content */}
               <div className="relative z-10 text-center">
                 <div className="text-6xl md:text-7xl font-bold font-[family-name:var(--font-mono)] text-emerald-400 mb-2 tabular-nums">
-                  +12.4%
+                  +5.1%
                 </div>
-                <div className="text-2xl text-[var(--text-muted)] font-[family-name:var(--font-mono)]">APY Kamino Yield</div>
+                <div className="text-2xl text-[var(--text-muted)] font-[family-name:var(--font-mono)]">APY em USDY (Ondo)</div>
                 <div className="mt-4 text-xs uppercase tracking-[0.2em] text-[var(--text-secondary)]">
                   O dinheiro rende enquanto o carro estaciona
                 </div>
@@ -196,7 +196,7 @@ export default function PitchDeck() {
               <span className="text-blue-400">start_parking</span>
               <span className="text-[var(--text-muted)]">()</span>
               <span className="text-[var(--text-muted)]"> → </span>
-              <span className="text-emerald-400">cpi_kamino_deposit</span>
+              <span className="text-emerald-400">cpi_ondo_mint_usdy</span>
               <span className="text-[var(--text-muted)]">()</span>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -235,7 +235,7 @@ export default function PitchDeck() {
             {[
               { label: 'Câmera IoT', icon: <Camera className="w-5 h-5 text-blue-400" />, sub: 'Identifica Placa' },
               { label: 'Motorista', icon: <QrCode className="w-5 h-5 text-cyan-400" />, sub: 'Aceita o Blink' },
-              { label: 'Escrow + Kamino', icon: <ShieldCheck className="w-5 h-5 text-emerald-400" />, sub: 'Gera Juros' },
+              { label: 'Escrow + Ondo (RWA)', icon: <ShieldCheck className="w-5 h-5 text-emerald-400" />, sub: 'Gera Juros do Tesouro' },
               { label: 'Gestor (DePIN)', icon: <DollarSign className="w-5 h-5 text-amber-400" />, sub: 'Recebe Taxa + Yield' },
             ].map((item, i) => (
               <React.Fragment key={i}>
@@ -278,7 +278,7 @@ export default function PitchDeck() {
               phase: "Phase 2",
               title: "Computer Vision Integration",
               desc: "Deploy de algoritmos ALPR (leitura de placas) em câmeras IoT baratas (Raspberry Pi).",
-              items: ["ALPR Engine", "IoT Hardware Sync", "Kamino CPI"],
+              items: ["ALPR Engine", "IoT Hardware Sync", "Ondo Finance CPI"],
               color: "cyan",
               active: false,
             },

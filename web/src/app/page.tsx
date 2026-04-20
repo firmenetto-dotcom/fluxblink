@@ -123,10 +123,10 @@ function ParkingDashboard() {
         </div>
         <div className="flex gap-4">
           <div className="text-right px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <p className="text-emerald-400/80 text-[10px] uppercase tracking-wider font-bold mb-1">Rendimento (Kamino)</p>
+            <p className="text-emerald-400/80 text-[10px] uppercase tracking-wider font-bold mb-1">Rendimento (USDY / Ondo)</p>
             <p className="text-emerald-400 font-mono font-bold flex items-center gap-1">
               <TrendingUp className="w-4 h-4" />
-              +12.4% APY
+              +5.1% APY
             </p>
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function Home() {
 
           {/* Subtitle */}
           <p className="text-[var(--text-secondary)] text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            O fim das maquininhas de cartão e cancelas. O pagamento de estacionamentos que flui em tempo real via Solana Blinks e rende juros no Kamino.
+            O fim das maquininhas de cartão e cancelas. O pagamento de estacionamentos que flui em tempo real via Solana Blinks e rende juros em Títulos do Tesouro Americano via Ondo.
           </p>
 
           {/* CTAs */}
@@ -266,7 +266,7 @@ export default function Home() {
           />
           <StatCard
             icon={<TrendingUp className="w-6 h-6 text-cyan-400" />}
-            label="Yield Gerado (Kamino)"
+            label="Yield Gerado (Ondo RWA)"
             value="$8,450"
             delay="0.3s"
           />
@@ -295,7 +295,7 @@ export default function Home() {
           <FeatureCard
             icon={<TrendingUp className="w-7 h-7 text-amber-400" />}
             title="Yield-Bearing"
-            desc="O dinheiro fica no Escrow rendendo juros no protocolo Kamino enquanto o carro está estacionado."
+            desc="O dinheiro fica no Escrow convertido em USDY rendendo juros reais em Títulos do Tesouro (Ondo) enquanto o carro está estacionado."
             delay="0.4s"
           />
         </div>
@@ -313,7 +313,7 @@ export default function Home() {
               <span className="gradient-text">DePIN</span>
             </h2>
             <p className="text-[var(--text-secondary)] text-lg mb-8 max-w-lg mx-auto">
-              Transforme seu estacionamento em uma infraestrutura autônoma, corte taxas da Mastercard e ganhe juros pelo Kamino.
+              Transforme seu estacionamento em uma infraestrutura autônoma, corte taxas da Mastercard e ganhe juros através da Ondo Finance.
             </p>
             <button className="btn-primary px-10 py-4 rounded-2xl font-bold text-base">
               <span className="flex items-center gap-2">

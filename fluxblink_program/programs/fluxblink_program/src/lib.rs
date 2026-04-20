@@ -42,10 +42,10 @@ pub mod fluxblink_program {
         );
         token::transfer(cpi_ctx, deposit_amount)?;
 
-        // TODO: Kamino CPI Deposit here
-        // The escrow_vault now holds `deposit_amount` USDC. We would CPI to Kamino
-        // to mint kUSDC (yield-bearing asset) into a PDA-controlled kToken account.
-        msg!("FluxPark: [TODO] Depositing {} USDC into Kamino Finance...", deposit_amount);
+        // TODO: Ondo Finance CPI Deposit here
+        // The escrow_vault now holds `deposit_amount` USDC. We would CPI to Ondo
+        // to mint USDY (yield-bearing RWA) into a PDA-controlled account.
+        msg!("FluxPark: [TODO] Depositing {} USDC into Ondo Finance to mint USDY...", deposit_amount);
 
         let parking = &mut ctx.accounts.parking_state;
         let clock = Clock::get()?;
@@ -104,10 +104,10 @@ pub mod fluxblink_program {
             &[bump],
         ]];
 
-        // TODO: Kamino CPI Withdraw here
-        // We would CPI to Kamino to redeem `actual_cost` worth of kUSDC back to USDC
+        // TODO: Ondo Finance CPI Withdraw here
+        // We would CPI to Ondo to redeem `actual_cost` worth of USDY back to USDC
         // into the escrow_vault before transferring it to the merchant.
-        msg!("FluxPark: [TODO] Withdrawing {} USDC from Kamino to pay Merchant...", actual_cost);
+        msg!("FluxPark: [TODO] Withdrawing {} USDC from Ondo (redeeming USDY) to pay Merchant...", actual_cost);
 
         let cpi_accounts = Transfer {
             from: ctx.accounts.escrow_vault.to_account_info(),
@@ -146,10 +146,10 @@ pub mod fluxblink_program {
         ]];
 
         if remaining > 0 {
-            // TODO: Kamino CPI Withdraw remaining here
+            // TODO: Ondo Finance CPI Withdraw remaining here
             // Any remaining yield goes to the Merchant, while the base remaining
             // deposit is refunded to the Driver.
-            msg!("FluxPark: [TODO] Withdrawing remaining {} USDC from Kamino for Driver refund...", remaining);
+            msg!("FluxPark: [TODO] Withdrawing remaining {} USDC from Ondo for Driver refund...", remaining);
 
             let cpi_accounts = Transfer {
                 from: ctx.accounts.escrow_vault.to_account_info(),
@@ -224,24 +224,19 @@ pub struct StartParking<'info> {
     )]
     pub parking_state: Box<Account<'info, ParkingState>>,
 
-    // --- KAMINO CPI ACCOUNTS (Placeholders for upcoming integration) ---
-    // /// CHECK: Kamino Strategy Program
-    // pub kamino_program: UncheckedAccount<'info>,
-    // /// CHECK: Kamino Global Config
-    // pub kamino_global_config: UncheckedAccount<'info>,
-    // /// CHECK: Kamino Strategy
+    // --- ONDO FINANCE CPI ACCOUNTS (Placeholders for upcoming integration) ---
+    // /// CHECK: Ondo Program
+    // pub ondo_program: UncheckedAccount<'info>,
+    // /// CHECK: Ondo Global State
+    // pub ondo_global_state: UncheckedAccount<'info>,
+    // /// CHECK: Ondo USDY Mint (Yield Bearing Asset / RWA)
     // #[account(mut)]
-    // pub kamino_strategy: UncheckedAccount<'info>,
-    // /// CHECK: Kamino kToken Mint (Yield Bearing Asset)
-    // #[account(mut)]
-    // pub ktoken_mint: UncheckedAccount<'info>,
+    // pub usdy_mint: UncheckedAccount<'info>,
     // #[account(
-    //     init_if_needed,
-    //     payer = driver,
-    //     associated_token::mint = ktoken_mint,
+    //     associated_token::mint = usdy_mint,
     //     associated_token::authority = escrow_vault
     // )]
-    // pub escrow_ktoken_account: Box<Account<'info, TokenAccount>>,
+    // pub escrow_usdy_account: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,

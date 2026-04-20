@@ -27,7 +27,7 @@ Bem-vindo ao repositório do FluxBlink! Pivotamos nossa solução para focar em 
 - [ ] **Solana Actions (Blinks) da Vaga**: Atualizar o código do `route.ts` para que o Blink simule o pagamento de uma vaga específica (ex: "Vaga A-12 - $0.05 / minuto").
 
 ### Backend & Smart Contract (IoT & Yield)
-- [ ] **Integração Kamino (A Arma contra a Mastercard)**: Fazer um CPI no contrato para depositar os fundos no Kamino Finance e gerar Yield enquanto o carro está estacionado.
+- [ ] **Integração Ondo Finance (USDY - Tesouro Americano)**: Fazer um CPI no contrato para converter USDC em USDY na Ondo Finance e gerar Yield de risco zero (RWA) enquanto o carro está estacionado.
 - [ ] **Lógica do Escrow**: Ajustar `lib.rs` para liberar fundos ao dono do estacionamento baseado nos minutos consumidos.
 - [ ] **Testes na Devnet**: Fazer deploy do contrato e simulação de uma "entrada de carro".
 - [ ] **Kill-Switch**: Implementar regra de bloqueio se o pulso (IoT da câmera) parar, expirando o TTL.
